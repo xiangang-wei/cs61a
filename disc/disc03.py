@@ -172,7 +172,16 @@ def prune(t,k):
 		return tree(label(t),[prune(b,k-1) for b in branches(t)])
 
 
-
+#################################
+# Useful tools
+#################################
+def print_tree(t,indent=0):
+	if is_leaf(t):
+		print('  ' * indent + str(label(t)))
+	else:
+		print('  ' * indent + str(label(t)))
+		for b in branches(t):
+			print_tree(b,indent+1)
 
 
 

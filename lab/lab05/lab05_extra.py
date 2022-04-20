@@ -21,8 +21,8 @@ def build_successors_table(tokens):
     prev = '.'
     for word in tokens:
         if prev not in table:
-            "*** YOUR CODE HERE ***"
-        "*** YOUR CODE HERE ***"
+            table[prev] =[]
+        table[prev].append(word)
         prev = word
     return table
 
@@ -39,7 +39,8 @@ def construct_sent(word, table):
     import random
     result = ''
     while word not in ['.', '!', '?']:
-        "*** YOUR CODE HERE ***"
+        result = result + " " + word
+        word = random.choice(table[word])
     return result.strip() + word
 
 def shakespeare_tokens(path='shakespeare.txt', url='http://composingprograms.com/shakespeare.txt'):
@@ -85,7 +86,16 @@ def prune_leaves(t, vals):
         5
       6
     """
-    "*** YOUR CODE HERE ***"
+    def my_prune_leaves(t,vals):
+      if is_leaf(t):
+        return tree(label(t))
+      else:
+        return tree(label(t),[my_prune_leaves(b,vals) for b in branches(t) if not (is_leaf(b) and label(b) in vals)])
+    
+    if label(t) in vals:
+      return None
+    else:
+      return my_prune_leaves(t,vals)
 
 # Q9
 def sprout_leaves(t, vals):
@@ -121,7 +131,10 @@ def sprout_leaves(t, vals):
           1
           2
     """
-    "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+      return tree(label(t),[tree(num) for num in vals])
+    else:
+      return tree(label(t),[sprout_leaves(b,vals) for b in branches(t)])
 
 # Q10
 def add_trees(t1, t2):
@@ -159,4 +172,19 @@ def add_trees(t1, t2):
         5
       5
     """
-    "*** YOUR CODE HERE ***"
+    if is_leaf(t1) and is_leaf(t2):
+      return tree(label(t1)+label(t2))
+    elif is_leaf(t1) and not is_leaf(t2):
+      return tree(label(t1)+label(t2),branches(t2))
+    elif not is_leaf(t1) and is_leaf(t2):
+      return tree(label(t1)+label(t2),branches(t1))
+    else:
+      b1 = branches(t1)
+      b2 = branches(t2)
+      if len(b1) > len(b2):
+        extra = b1[len(b1)-len(b2):]
+      elif len(b1) < len(b2):
+        extra = b2[len(b1)-len(b2):]
+      else:
+        extra = []
+      return tree(label(t1)+label(t2),[add_trees(t[0],t[1]) for t in list(zip(b1,b2))] + extra)

@@ -1,3 +1,6 @@
+from turtle import up
+
+
 def tree(label, branches=[]):
     """Construct a tree with the given label value and a list of branches."""
     for branch in branches:
@@ -284,7 +287,11 @@ class Account:
     def time_to_retire(self, amount):
         """Return the number of years until balance would grow to amount."""
         assert self.balance > 0 and amount > 0 and self.interest > 0
-        "*** YOUR CODE HERE ***"
+        current_balance = self.balance
+        num_of_years = 0
+        while current_balance < amount:
+            current_balance,num_of_years = current_balance+current_balance*self.interest, num_of_years+1
+        return num_of_years
 
 class FreeChecking(Account):
     """A bank account that charges for withdrawals, but the first two are free!
@@ -313,7 +320,20 @@ class FreeChecking(Account):
     withdraw_fee = 1
     free_withdrawals = 2
 
-    "*** YOUR CODE HERE ***"
+    def withdraw(self, amount):
+        self.free_withdrawals = self.free_withdrawals - 1
+        if self.free_withdrawals >= 0:
+            if self.balance < amount:
+                return 'Insufficient funds'
+            else:
+                self.balance = self.balance - amount
+                return self.balance
+        else:
+            if self.balance < amount + self.withdraw_fee:
+                return 'Insufficient funds'
+            else:
+                self.balance = self.balance - amount - self.withdraw_fee
+                return self.balance
 
 ############
 # Mutation #
@@ -339,7 +359,13 @@ def make_counter():
     >>> c('b') + c2('b')
     5
     """
-    "*** YOUR CODE HERE ***"
+    call_nums_dict = {}
+    def call_nums(s):
+        if s not in call_nums_dict:
+            call_nums_dict[s] = 0
+        call_nums_dict[s] = call_nums_dict[s] + 1
+        return call_nums_dict[s]
+    return call_nums
 
 def make_fib():
     """Returns a function that returns the next Fibonacci number
@@ -360,7 +386,22 @@ def make_fib():
     >>> fib() + sum([fib2() for _ in range(5)])
     12
     """
-    "*** YOUR CODE HERE ***"
+    call_num = 0
+
+    def fib_n(n):
+        if n == 0:
+            return 0
+        elif n == 1:
+            return 1
+        else:
+            return fib_n(n-1) + fib_n(n-2)
+
+    def fib():
+        nonlocal call_num
+        call_num = call_num + 1
+        return fib_n(call_num - 1)
+
+    return fib
 
 def make_withdraw(balance, password):
     """Return a password-protected withdraw function.
@@ -375,7 +416,7 @@ def make_withdraw(balance, password):
     >>> error
     'Incorrect password'
     >>> new_bal = w(25, 'hax0r')
-    >>> new
+    >>> new_bal
     50
     >>> w(75, 'a')
     'Incorrect password'
@@ -390,7 +431,24 @@ def make_withdraw(balance, password):
     >>> type(w(10, 'l33t')) == str
     True
     """
-    "*** YOUR CODE HERE ***"
+    wrong_passwd_list = []
+    def withdraw(amount,input_passwd):
+
+        nonlocal balance
+
+        if len(wrong_passwd_list) >= 3:
+            return "Your account is locked. Attempts: " + str(wrong_passwd_list)
+        
+        if password != input_passwd:
+            wrong_passwd_list.append(input_passwd)
+            return 'Incorrect password'     
+        else:
+            if balance < amount:
+                return 'Insufficient funds'
+            else:
+                balance = balance - amount
+                return balance
+    return withdraw
 
 def make_joint(withdraw, old_password, new_password):
     """Return a password-protected withdraw function that has joint access to
@@ -430,7 +488,17 @@ def make_joint(withdraw, old_password, new_password):
     >>> make_joint(w, 'hax0r', 'hello')
     "Your account is locked. Attempts: ['my', 'secret', 'password']"
     """
-    "*** YOUR CODE HERE ***"
+    result = withdraw(0,old_password)
+    # Test the old password is correct or not, if wrong then return the result
+    if type(result) == str: 
+        return result
+    def new_withdraw(amount,user_passwd):
+        nonlocal new_password
+        if new_password == user_passwd:
+            return withdraw(amount,old_password)
+        else:
+            return withdraw(amount,user_passwd)
+    return new_withdraw
 
 ###################
 # Extra Questions #
@@ -442,11 +510,11 @@ def interval(a, b):
 
 def lower_bound(x):
     """Return the lower bound of interval x."""
-    "*** YOUR CODE HERE ***"
+    return x[0]
 
 def upper_bound(x):
     """Return the upper bound of interval x."""
-    "*** YOUR CODE HERE ***"
+    return x[1]
 
 def str_interval(x):
     """Return a string representation of interval x."""
@@ -462,22 +530,26 @@ def add_interval(x, y):
 def mul_interval(x, y):
     """Return the interval that contains the product of any value in x and any
     value in y."""
-    p1 = x[0] * y[0]
-    p2 = x[0] * y[1]
-    p3 = x[1] * y[0]
-    p4 = x[1] * y[1]
-    return [min(p1, p2, p3, p4), max(p1, p2, p3, p4)]
+    p1 = lower_bound(x) * lower_bound(y)
+    p2 = lower_bound(x) * upper_bound(y)
+    p3 = upper_bound(x) * lower_bound(y)
+    p4 = upper_bound(x) * upper_bound(y)
+    return interval(min(p1, p2, p3, p4), max(p1, p2, p3, p4))
 
 def sub_interval(x, y):
     """Return the interval that contains the difference between any value in x
     and any value in y."""
-    "*** YOUR CODE HERE ***"
+    p1 = lower_bound(x) - lower_bound(y)
+    p2 = lower_bound(x) - upper_bound(y)
+    p3 = upper_bound(x) - lower_bound(y)
+    p4 = upper_bound(x) - upper_bound(y)
+    return interval(min(p1, p2, p3, p4), max(p1, p2, p3, p4))
 
 def div_interval(x, y):
     """Return the interval that contains the quotient of any value in x divided by
     any value in y. Division is implemented as the multiplication of x by the
     reciprocal of y."""
-    "*** YOUR CODE HERE ***"
+    assert lower_bound(y) > 0 and upper_bound(y) > 0
     reciprocal_y = interval(1/upper_bound(y), 1/lower_bound(y))
     return mul_interval(x, reciprocal_y)
 
@@ -499,8 +571,8 @@ def check_par():
     >>> lower_bound(x) != lower_bound(y) or upper_bound(x) != upper_bound(y)
     True
     """
-    r1 = interval(1, 1) # Replace this line!
-    r2 = interval(1, 1) # Replace this line!
+    r1 = interval(1, 2) 
+    r2 = interval(2, 1) 
     return r1, r2
 
 def multiple_references_explanation():

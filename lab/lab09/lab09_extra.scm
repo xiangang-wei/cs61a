@@ -4,16 +4,20 @@
 ; Q5
 (define lst
   'YOUR-CODE-HERE
+  ; The png file is broken on the page
 )
 
 ; Q6
 (define (composed f g)
-  'YOUR-CODE-HERE
+  (define (compose_f_g a)
+          (f (g a))
+  )
+  compose_f_g
 )
 
 ; Q7
 (define (remove item lst)
-  'YOUR-CODE-HERE
+  (filter (lambda (x) (not (= item x))) lst)
 )
 
 
@@ -29,7 +33,13 @@
 (define (max a b) (if (> a b) a b))
 (define (min a b) (if (> a b) b a))
 (define (gcd a b)
-  'YOUR-CODE-HERE
+  (if (or (= 0 a) (= 0 b))
+      (max a b)
+      (if (= 0 (remainder (max a b) (min a b)))
+          (min a b)
+          (gcd (min a b) (remainder (max a b) (min a b)))
+      )
+  )
 )
 
 ;;; Tests
@@ -40,15 +50,30 @@
 
 ; Q9
 (define (no-repeats s)
-  'YOUR-CODE-HERE
+  (if (null? s)
+      nil
+      (cons (car s) (no-repeats (filter (lambda (x) (not (= x (car s)))) (cdr s))))
+  )
 )
 
 ; Q10
 (define (substitute s old new)
-  'YOUR-CODE-HERE
+  (if (null? s)
+      nil
+      (if (pair? (car s))
+          (cons (substitute (car s) old new) (substitute (cdr s) old new))
+          (if (eq? old (car s))
+              (cons new (substitute (cdr s) old new))
+              (cons (car s) (substitute (cdr s) old new))
+          )
+      )
+  )
 )
 
 ; Q11
 (define (sub-all s olds news)
-  'YOUR-CODE-HERE
+  (if (null? olds)
+      s
+      (sub-all (substitute s (car olds) (car news)) (cdr olds) (cdr news))
+  )
 )
